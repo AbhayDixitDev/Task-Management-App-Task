@@ -1,9 +1,9 @@
 const express = require('express');
 const Task = require('../models/taskModel');
-const authMiddleware = require('../middlewares/auth');
+const authorization = require('../middlewares/auth');
 const router = express.Router();
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authorization, async (req, res) => {
     const { title, description, dueDate, priority } = req.body;
 
     try {
@@ -15,22 +15,22 @@ router.post('/', authMiddleware, async (req, res) => {
             userId: req.user.id,
         });
         await newTask.save();
-        res.status(201).json(newTask);
+        res.status(201).send(newTask);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).send({ message: 'Server error' });
     }
 });
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authorization, async (req, res) => {
     try {
         const tasks = await Task.find({ userId: req.user.id });
-        res.json(tasks);
+        res.send(tasks);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).send({ message: 'Server error' });
     }
 });
 
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authorization, async (req, res) => {
     const { title, description, dueDate, priority } = req.body;
 
     try {
@@ -39,19 +39,20 @@ router.put('/:id', authMiddleware, async (req, res) => {
             { title, description, dueDate, priority },
             { new: true }
         );
-        res.json(updatedTask);
+        res.send(updatedTask);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).send({ message: 'Server error' });
     }
 });
 
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authorization, async (req, res) => {
     try {
         await Task.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Task deleted successfully' });
+        res.send({ message: 'Task deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).send({ message: 'Server error' });
     }
 });
 
 module.exports = router;
+
