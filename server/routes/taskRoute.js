@@ -3,7 +3,8 @@ const Task = require('../models/taskModel');
 const { authorization, adminAuthorization } = require('../middlewares/auth'); 
 const router = express.Router();
 
-router.post('/create',adminAuthorization, async (req, res) => {
+
+router.post('/create', async (req, res) => {
     const { title, description, dueDate, priority, userId } = req.body;
 
     try {
@@ -15,30 +16,21 @@ router.post('/create',adminAuthorization, async (req, res) => {
             userId,
         });
         await newTask.save();
-        res.status(201).send(newTask);
+        res.status(201).send({message: 'Task created successfully'});
     } catch (error) {
         res.status(500).send({ message: 'Server error' });
     }
 });
 
-router.get('/', authorization, async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
-
+router.get('/', async (req, res) => {
     try {
-        const tasks = await Task.find({ userId: req.user.id })
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .sort({ createdAt: -1 });
-        const total = await Task.countDocuments({ userId: req.user.id });
-        res.send({
-            tasks,
-            totalPages: Math.ceil(total / limit),
-            currentPage: page,
-        });
+        const tasks = await Task.find({}).sort({ createdAt: -1 }).populate('userId', '-password');
+        res.send(tasks);
     } catch (error) {
         res.status(500).send({ message: 'Server error' });
     }
 });
+
 
 router.get('/:id', authorization, async (req, res) => {
     try {
@@ -52,15 +44,17 @@ router.get('/:id', authorization, async (req, res) => {
     }
 });
 
-router.put('/:id', adminAuthorization, async (req, res) => {
-    const { title, description, dueDate, priority } = req.body;
+router.put('/:id', async (req, res) => {
+    const { title, description, dueDate, priority, userId } = req.body;
 
     try {
         const task = await Task.findByIdAndUpdate(
             req.params.id,
-            { title, description, dueDate, priority },
+            { title, description, dueDate, priority, userId },
             { new: true }
         );
+        console.log(task)
+
         if (!task) {
             return res.status(404).send({ message: 'Task not found' });
         }

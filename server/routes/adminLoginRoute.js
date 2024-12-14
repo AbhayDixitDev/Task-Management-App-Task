@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
         return res.status(401).send({ message: 'Invalid Admin credentials' });
     }
 
-    const token = jwt.sign({ id: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: 'abhaydixitdev' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.cookie('access_token', token, {
         httpOnly: true,
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
         maxAge: 3600000,
     });
 
-    res.status(200).send({ message: 'Admin login successful' });
+    res.status(200).send({ message: 'Admin login successful', token });
 });
 
 
@@ -46,7 +46,5 @@ router.get('/logout', (req, res) => {
     res.clearCookie('access_token');
     res.status(200).send({ message: 'Logged out successfully' });
 });
-
-
 
 module.exports = router;

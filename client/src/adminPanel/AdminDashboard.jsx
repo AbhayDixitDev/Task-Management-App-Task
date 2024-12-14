@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import AdminTopMenu from './components/AdminTopMenu';
+import AdminSidemenu from './components/AdminSidemenu';
+import { Outlet, Navigate } from 'react-router-dom';
+import AdminFooter from './components/AdminFooter';
 
 const AdminDashboard = () => {
+   
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        return <Navigate to="/" />;
+    }
+
     return (
         <div>
-            <h1>Admin Dashboard</h1>
-            <p>Welcome to the admin dashboard.</p>
+            <AdminTopMenu/>
+            <div className="d-flex h-100" style={{height:'100vh'}}>
+                <AdminSidemenu/>
+                    <Outlet/>
+            </div>
+            <AdminFooter/>
         </div>
     );
 };

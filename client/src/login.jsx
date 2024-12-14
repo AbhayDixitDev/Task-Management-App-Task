@@ -50,6 +50,8 @@ const Login = () => {
         .then(res=>{
             console.log(res)
             message.success('Login successful')
+            localStorage.setItem('access_token', res.data.token);
+            localStorage.setItem('username', username);
             navigate('/dashboard')
         })
         .catch(err=>{
@@ -63,6 +65,9 @@ const Login = () => {
         axios.post(api,{username,password})
         .then(res=>{
             message.success('Login successful')
+            console.log(res)
+            localStorage.setItem('access_token', res.data.token);
+            localStorage.setItem('username', username);
             navigate('/adminDashboard')
             console.log(res)
         })
