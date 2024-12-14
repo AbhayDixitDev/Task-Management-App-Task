@@ -16,4 +16,15 @@ const authorization = (req, res, next) => {
     }
 };
 
-module.exports = authorization;
+const adminAuthorization = (req, res, next) => {
+    const { username, password } = req.body;
+
+    if (username !== 'Abhaydixitdev' || password !== 'Admin@12345') {
+        return res.status(401).send({ message: 'Invalid Admin credentials' });
+    }
+
+    next();
+};
+
+
+module.exports = {authorization,adminAuthorization};

@@ -6,7 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const userRoute = require('./routes/authUser');
 const taskRoute = require('./routes/taskRoute');
-
+const adminLoginRoute = require('./routes/adminLoginRoute');
 dotenv.config();
 
 app.use(express.json());
@@ -22,6 +22,7 @@ mongoose.connect(process.env.DBLINK).then(() => console.log('Database Connected'
 
 app.use("/api/users",userRoute)
 app.use("/api/tasks",taskRoute)
+app.use("/api/admin",adminLoginRoute)
 
 app.listen(port, () => {
     console.log(`Task Management App listening on port ${port}`);

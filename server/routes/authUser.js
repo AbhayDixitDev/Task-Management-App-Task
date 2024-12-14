@@ -2,9 +2,10 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/usersModel');
+const { adminAuthorization, authorization } = require('../middlewares/auth');
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post('/register',adminAuthorization, async (req, res) => {
     const { name, username, password } = req.body;
 
     try {
@@ -53,7 +54,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get("/logout", (req, res) => {
+router.get("/logout",authorization, (req, res) => {
     res.clearCookie("access_token");
     res.status(200).send({ message: "Logged out successfully" });
 });
