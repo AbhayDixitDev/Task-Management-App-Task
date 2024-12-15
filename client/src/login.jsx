@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { FaUser, FaLock } from 'react-icons/fa';
-import Darkmode from 'darkmode-js';
+// import Darkmode from 'darkmode-js';
 import { bottom } from '@popperjs/core';
 import axios from 'axios';
-import message from 'antd/lib/message';
+import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -20,27 +20,7 @@ const Login = () => {
     const passwordPlaceholder = isUser ? 'Enter your password' : 'Enter your admin password';
     const buttonText = isUser ? 'Login as User' : 'Login as Admin';
 
-    useEffect(() => {
-      const options = {
-        marginTop: '32px',
-        top: '32px',
-        bottom: 'unset',
-        right: '32px',
-        left: 'unset',
-        time: '0.5s',
-        mixColor: '#fff',
-        backgroundColor: '#fff',
-        buttonColorDark: '#fffc',
-        buttonColorLight: '#000',
-        saveInCookies: false,
-        label: '🌜',
-        toggleButton: true,
-        autoMatchOsTheme: true
-      };
-       
-      const darkmode = new Darkmode(options);
-      darkmode.showWidget();
-    }, []);
+
       
 
     const userLogin = (username, password) => {
@@ -48,14 +28,13 @@ const Login = () => {
         const api="http://localhost:5000/api/users/login"
         axios.post(api,{username,password})
         .then(res=>{
-            console.log(res)
             message.success('Login successful')
             localStorage.setItem('access_token', res.data.token);
             localStorage.setItem('username', username);
             navigate('/dashboard')
         })
         .catch(err=>{
-            console.log(err)
+            message.error('Login failed')
         })
     };
 
@@ -69,10 +48,9 @@ const Login = () => {
             localStorage.setItem('access_token', res.data.token);
             localStorage.setItem('username', username);
             navigate('/adminDashboard')
-            console.log(res)
         })
         .catch(err=>{
-            console.log(err)
+            message.error('Login failed')
         })
     };
 
@@ -132,7 +110,7 @@ const Login = () => {
                 </Row>
             </Container>
             <footer className="bg-dark text-white p-3 text-center" style={{ marginTop: 'auto' }}>
-                <p>&copy; 2023 Abhay Dixit</p>
+                <p>&copy; 2024 Abhay Dixit</p>
             </footer>
         </div>
     );

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardBody, CardTitle, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { message } from 'antd';
+// import 'antd/dist/antd.css';
+// import 'tailwindcss/base.css';
+// import 'tailwindcss/components.css';
+// import 'tailwindcss/utilities.css';
 
 
 const AssignTask = () => {
@@ -45,46 +49,46 @@ const AssignTask = () => {
     }
 
     return (
-        <Container>
-            <Row>
-                <Col>
-                    <Card>
-                        <CardBody>
-                            <CardTitle>Assign Task</CardTitle>
-                            <Form onSubmit={handleSubmit}>
-                                <FormGroup>
-                                    <Label for="title">Title</Label>
-                                    <Input type="text" name="title" id="title" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} />
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label for="description">Description</Label>
-                                    <Input type="textarea" name="description" id="description" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} />
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label for="dueDate">Due Date</Label>
-                                    <Input type="date" name="dueDate" id="dueDate" placeholder="Enter due date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label for="priority">Priority</Label>
-                                    <Input type="select" name="priority" id="priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
+        <Container className=" flex justify-center items-center">
+            <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Col className="bg-black rounded-lg ">
+                    <Card className="bg-transparent border-0">
+                        <Card.Body className="text-white">
+                            <Card.Title>Assign Task</Card.Title>
+                            <Form onSubmit={handleSubmit} className="space-y-2 ">
+                                <Form.Group className="mb-2 " controlId="title">
+                                    <Form.Label className="text-white">Title</Form.Label>
+                                    <Form.Control type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                                </Form.Group>
+                                <Form.Group className="mb-2" controlId="description">
+                                    <Form.Label className="text-white">Description</Form.Label>
+                                    <Form.Control as="textarea" rows={3} placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} />
+                                </Form.Group>
+                                <Form.Group className="mb-2" controlId="dueDate">
+                                    <Form.Label className="text-white">Due Date</Form.Label>
+                                    <Form.Control type="date" placeholder="Enter due date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                                </Form.Group>
+                                <Form.Group className="mb-2" controlId="priority">
+                                    <Form.Label className="text-white">Priority</Form.Label>
+                                    <Form.Select value={priority} onChange={(e) => setPriority(e.target.value)}>
                                         <option value="">Select Priority</option>
                                         <option value="high">High</option>
                                         <option value="medium">Medium</option>
                                         <option value="low">Low</option>
-                                    </Input>
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label for="userId">User</Label>
-                                    <Input type="select" name="userId" id="userId" value={userId} onChange={(e) => setUserId(e.target.value)}>
+                                    </Form.Select>
+                                </Form.Group>
+                                <Form.Group className="mb-2" controlId="userId">
+                                    <Form.Label className="text-white">User</Form.Label>
+                                    <Form.Select value={userId} onChange={(e) => setUserId(e.target.value)}>
                                         <option value="">Select User</option>
                                         {users.map(user => (
                                             <option key={user._id} value={user._id}>{user.username}</option>
                                         ))}
-                                    </Input>
-                                </FormGroup>
-                                <Button color="primary">Assign</Button>
+                                    </Form.Select>
+                                </Form.Group>
+                                <Button variant="primary" type="submit">Assign</Button>
                             </Form>
-                        </CardBody>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>

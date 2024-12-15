@@ -1,60 +1,26 @@
-import React from 'react'
-import { Container, Row, Col, Card, Button } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-import axios from 'axios'
+import React, { useEffect } from 'react';
+import TopMenu from './components/TopMenu';
+import Sidemenu from './components/Sidemenu';
+import { Outlet, Navigate } from 'react-router-dom';
+import Footer from './components/Footer';
 
 const Dashboard = () => {
-    const [tasks, setTasks] = React.useState([])
-    const [loading, setLoading] = React.useState(true)
-
-    React.useEffect(() => {
-        axios.get('http://localhost:5000/api/tasks', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
-        })
-        .then(res => {
-            setTasks(res.data.tasks)
-            setLoading(false)
-        })
-        .catch(err => {
-            console.log(err)
-        })
-    }, [])
+   
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        return <Navigate to="/" />;
+    }
 
     return (
-        <Container>
-            <Row>
-                <Col md={12}>
-                    <Card>
-                        <Card.Header>
-                            <Card.Title as="h5">Tasks</Card.Title>
-                        </Card.Header>
-                        <Card.Body>
-                            {loading ? (
-                                <p>Loading...</p>
-                            ) : (
-                                <ul>
-                                    {tasks.map(task => (
-                                        <li key={task._id}>
-                                            <Link to={`/user/task/${task._id}`}>
-                                                {task.title}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </Card.Body>
-                        <Card.Footer>
-                            <Button variant="primary" as={Link} to="/user/create-task">
-                                Create Task
-                            </Button>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
-    )
-}
+        <div>
+            <TopMenu/>
+            <div className="d-flex h-100" style={{height:'100vh'}}>
+                <Sidemenu/>
+                    <Outlet/>
+            </div>
+            <Footer/>
+        </div>
+    );
+};
 
-export default Dashboard
+export default Dashboard;

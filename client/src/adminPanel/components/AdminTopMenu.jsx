@@ -23,6 +23,7 @@ const AdminTopMenu = () => {
                     <Nav>
                         <NavLink style={{fontFamily: 'Lobster, cursive', color: '#ffa500'}} onClick={() => {
                             localStorage.removeItem('access_token');
+                            localStorage.removeItem('username');
                             window.location.href = '/';
                         }}>Logout <FaPowerOff style={{display: 'inline-block', marginLeft: '5px', color: '#ffa500'}}/></NavLink>
                     </Nav>

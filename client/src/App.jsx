@@ -8,6 +8,8 @@ import AssignTask from "./adminPanel/pages/AssignTask";
 import ShowTask from "./adminPanel/pages/ShowTask";
 import ShowUsers from "./adminPanel/pages/ShowUsers";
 import { useEffect } from "react";
+import ChangePassword from "./userPanel/pages/ChangePassword";
+import ShowUserTask from "./userPanel/pages/ShowTask";
 const App = () => {
   useEffect(() => {
     const options = {
@@ -17,6 +19,7 @@ const App = () => {
       right: '32px',
       left: 'unset',
       time: '0.5s',
+      zIndex: '10000',
       mixColor: '#fff',
       backgroundColor: '#fff',
       buttonColorDark: '#fffc',
@@ -34,13 +37,17 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} >
+        <Route index element={<ShowUserTask/>}/>
+        <Route path="changePassword" element={<ChangePassword/>}/>
+        <Route path="showUserTask" element={<ShowUserTask/>}/>
+        </Route>
         <Route path="/adminDashboard" element={<AdminDashboard />} >
+          <Route index element={<ShowTask/>}/>
+          <Route path="showTask" element={<ShowTask />} />
           <Route path="createUser" element={<CreateUser />} />
           <Route path="assignTask" element={<AssignTask />} />
-          <Route path="showtask" element={<ShowTask/>}/>    
-          <Route path="showUsers" element={<ShowUsers/>}/>    
-                
+          <Route path="showUsers" element={<ShowUsers/>}/>      
         </Route>
       </Routes>
     </BrowserRouter>

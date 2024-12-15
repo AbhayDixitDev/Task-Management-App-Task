@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardBody, CardTitle, Table, Button, Modal, Form } from 'react-bootstrap';
-
+import { Container, Row, Col, Card, CardBody, CardTitle, Table, Button, Modal, Form, Pagination } from 'react-bootstrap';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { message } from 'antd';
+import Notification from 'react-notification-system';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 
 const ShowTask = () => {
     const [tasks, setTasks] = useState([]);
     const [editTask, setEditTask] = useState(null);
     const [modal, setModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(5);
     const token = localStorage.getItem('access_token');
     if (!token) {
         return <Navigate to="/" />
@@ -17,147 +20,146 @@ const ShowTask = () => {
 
     useEffect(() => { 
         const fetchUsers = async () => { 
-            const response = await axios.get('http://localhost:5000/api/users/all');
-            setUsers(response.data);
+            try {
+                const response = await axios.get('http://localhost:5000/api/users/all');
+                setUsers(response.data);
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
         }
         fetchUsers();
     }, []);
 
     useEffect(() => {
         const fetchTasks = async () => {
-            const response = await axios.get('http://localhost:5000/api/tasks');
-            setTasks(response.data);
+            try {
+                const response = await axios.get('http://localhost:5000/api/tasks');
+                setTasks(response.data);
+            } catch (error) {
+                console.error("Error fetching tasks:", error);
+            }
         }
         fetchTasks();
     }, []);
-
-    const highPriorityTasks = tasks.filter(task => task.priority === 'high');
-    const mediumPriorityTasks = tasks.filter(task => task.priority === 'medium');
-    const lowPriorityTasks = tasks.filter(task => task.priority === 'low');
 
     const handleEdit = (task) => {
         setEditTask(task);
         setModal(true);
     }
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const api = `http://localhost:5000/api/tasks/${editTask._id}`;
-        await axios.put(api, editTask)
-        .then(res => {
-            setModal(false);
-            setEditTask(null);
-            setTasks(tasks.map(task => task._id === editTask._id ? editTask : task));
-            message.success(res.data.message);
-        })
-        .catch(err => {
-            console.log(err);
-        });
+    const handleDelete = async (taskId) => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this task?');
+        if (confirmDelete) {
+            try {
+                const res = await axios.delete(`http://localhost:5000/api/tasks/${taskId}`);
+                setTasks(tasks.filter(task => task._id !== taskId));
+                Notification.error({
+                    message: res.data.message,
+                    placement: 'topRight',
+                    duration: 5,
+                    icon: <FaBell style={{ color: 'red' }} />
+                });
+            } catch (err) {
+                console.error(err);
+                Notification.error({
+                    message: "Error deleting task",
+                    placement: 'topRight',
+                    duration: 5,
+                    icon: <FaBell style={{ color: 'red' }} />
+                });
+            }
+        }
     }
 
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const api = `http://localhost:5000/api/tasks/${editTask?._id}`;
+        try {
+            const res = await axios.put(api, editTask);
+            setModal(false);
+            setEditTask(null);
+            setTasks(tasks.map(task => task._id === editTask?._id ? editTask : task));
+            Notification.success({
+                message: res.data.message,
+                placement: 'topRight',
+                duration: 5,
+                icon: <FaBell style={{ color: 'green' }} />
+            });
+        } catch (err) {
+            console.error(err);
+            Notification.error({
+                message: "Error updating task",
+                placement: 'topRight',
+                duration: 5,
+                icon: <FaBell style={{ color: 'red' }} />
+            });
+        }
+    }
+
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    }
+
+    const indexOfLastTask = currentPage * itemsPerPage;
+    const indexOfFirstTask = indexOfLastTask - itemsPerPage;
+
+    // Sort tasks by priority
+    const sortedTasks = tasks.sort((a, b) => {
+        const priorityOrder = { high: 1, medium: 2, low: 3 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
+
+    const currentTasks = sortedTasks.slice(indexOfFirstTask, indexOfLastTask);
+
+    const totalTasks = sortedTasks.filter(task => task.status !== 'complete').length;
+    const totalPages = Math.ceil(totalTasks / itemsPerPage);
+
+    const getRowStyle = (priority) => {
+        switch (priority) {
+            case 'high':
+                return { background: 'linear-gradient(to right, rgba(255, 50, 0, 0.7), rgba(255, 0, 50, 0.5))' }; // Red gradient
+            case 'medium':
+                return { background: 'linear-gradient(to right, rgba(255, 155, 100, 0.7), rgba(255, 255, 100, 0.5))' }; // Yellow gradient
+            case 'low':
+                return { background: 'linear-gradient(to right, rgba(0, 255, 0, 0.7), rgba(0, 255, 0, 0.5))' }; // Green gradient
+            default:
+                return {};
+        }
+    };
+
     return (
+       <>
         <Container>
             <Row>
-                <Col >
-                    <Card style={{backgroundColor: 'red'}}>
+                <Col>
+                    <Card>
                         <CardBody>
-                            <CardTitle>High Priority</CardTitle>
+                            <CardTitle style={{color: 'red', fontSize: '20px'}}>Total Due Tasks: {totalTasks}</CardTitle>
                             <Table hover>
                                 <thead>
                                     <tr>
                                         <th>#</th>
                                         <th>Task Name</th>
-                                        <th>Description</th>
                                         <th>Due Date</th>
                                         <th>User Name</th>
                                         <th>Status</th>
+                                        <th>Priority</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {highPriorityTasks.map((task, index) => (
-                                        <tr key={index}>
-                                            <th scope="row">{index + 1}</th>
+                                    {currentTasks.map((task, index) => (
+                                        <tr key={task._id} style={getRowStyle(task.priority)}>
+                                            <th scope="row">{indexOfFirstTask + index + 1}</th>
                                             <td>{task.title}</td>
-                                            <td>{task.description}</td>
-                                            <td>{task.dueDate}</td>
-                                            <td>{task.userId ? task.userId.username : ''}</td>
+                                            <td>{new Date(task.dueDate).toLocaleDateString()}</td>
+                                            <td>{task.userId?.username || ''}</td>
                                             <td>{task.status}</td>
+                                            <td>{task.priority}</td>
                                             <td>
-                                                <Button color="success" onClick={() => handleEdit(task)}>Edit</Button>{' '}
-                                                <Button color="danger">Delete</Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </CardBody>
-                    </Card>
-                </Col>
-                <Col >
-                    <Card style={{backgroundColor: 'yellow'}}>
-                        <CardBody>
-                            <CardTitle>Medium Priority</CardTitle>
-                            <Table hover style={{backgroundColor: 'yellow'}}>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Task Name</th>
-                                        <th>Description</th>
-                                        <th>Due Date</th>
-                                        <th>User Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mediumPriorityTasks.map((task, index) => (
-                                        <tr key={index}>
-                                            <th scope="row">{index + 1}</th>
-                                            <td>{task.title}</td>
-                                            <td>{task.description}</td>
-                                            <td>{task.dueDate}</td>
-                                            <td>{task.userId ? task.userId.username : ''}</td>
-                                            <td>{task.status}</td>
-                                            <td>
-                                                <Button color="success" onClick={() => handleEdit(task)}>Edit</Button>{' '}
-                                                <Button color="danger">Delete</Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </CardBody>
-                    </Card>
-                </Col>
-                <Col >
-                    <Card style={{backgroundColor: 'green'}}>
-                        <CardBody>
-                            <CardTitle>Low Priority</CardTitle>
-                            <Table hover>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Task Name</th>
-                                        <th>Description</th>
-                                        <th>Due Date</th>
-                                        <th>User Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {lowPriorityTasks.map((task, index) => (
-                                        <tr key={index}>
-                                            <th scope="row">{index + 1}</th>
-                                            <td>{task.title}</td>
-                                            <td>{task.description}</td>
-                                            <td>{task.dueDate}</td>
-                                            <td>{task.userId ? task.userId.username : ''}</td>
-                                            <td>{task.status}</td>
-                                            <td>
-                                                <Button color="success" onClick={() => handleEdit(task)}>Edit</Button>{' '}
-                                                <Button color="danger">Delete</Button>
+                                                <Button color="primary" style={{backgroundColor:"lightgreen"}} onClick={() => handleEdit(task)}>Edit</Button>
+                                                <Button color="secondary" style={{backgroundColor:"red"}} onClick={() => handleDelete(task._id)}>Delete</Button>
                                             </td>
                                         </tr>
                                     ))}
@@ -167,7 +169,18 @@ const ShowTask = () => {
                     </Card>
                 </Col>
             </Row>
-            <Modal isOpen={modal} onHide={() => setModal(false)}>
+            <Pagination className="justify-content-center">
+                <Pagination.First onClick={() => paginate(1)} />
+                <Pagination.Prev onClick={() => currentPage > 1 && paginate(currentPage - 1)} />
+                {[...Array(totalPages)].map((_, i) => (
+                    <Pagination.Item key={i + 1} active={currentPage === i + 1} onClick={() => paginate(i + 1)}>
+                        {i + 1}
+                    </Pagination.Item>
+                ))}
+                <Pagination.Next onClick={() => currentPage < totalPages && paginate(currentPage + 1)} />
+                <Pagination.Last onClick={() => paginate(totalPages)} />
+            </Pagination>
+            <Modal show={modal} onHide={() => setModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Task</Modal.Title>
                 </Modal.Header>
@@ -187,7 +200,7 @@ const ShowTask = () => {
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Priority</Form.Label>
-                            <Form.Control as="select" name="priority" id="priority" value={editTask ? editTask.priority : ''} onChange={(e) => setEditTask({...editTask, priority: e.target.value})} >
+                            <Form.Control as="select" name="priority" id="priority" value={editTask ? editTask.priority : ''} onChange={(e) => setEditTask({...editTask, priority: e.target.value})}>
                                 <option value="high">High</option>
                                 <option value="medium">Medium</option>
                                 <option value="low">Low</option>
@@ -195,27 +208,28 @@ const ShowTask = () => {
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Status</Form.Label>
-                            <Form.Control as="select" name="status" id="status" value={editTask ? editTask.status : ''} onChange={(e) => setEditTask({...editTask, status: e.target.value})} >
+                            <Form.Control as="select" name="status" id="status" value={editTask ? editTask.status : ''} onChange={(e) => setEditTask({...editTask, status: e.target.value})}>
                                 <option value="pending">Pending</option>
                                 <option value="inprogress">In Progress</option>
-                                <option value="completed">Completed</option>
+                                <option value="complete">Complete</option>
                             </Form.Control>
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>User</Form.Label>
-                            <Form.Control as="select" name="userId" id="userId" value={editTask ? editTask.userId : ''} onChange={(e) => setEditTask({...editTask, userId: e.target.value})} >
-                                <option value="">Select User</option>
+                            <Form.Control as="select" name="userId" id="userId" value={editTask ? editTask.userId : ''} onChange={(e) => setEditTask({...editTask, userId: e.target.value})}>
+                            <option value="">Select User</option>
                                 {users.map(user => (
                                     <option key={user._id} value={user._id}>{user.username}</option>
                                 ))}
-                            </Form.Control>
-                        </Form.Group>
-                        <Button color="primary">Submit</Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-        </Container>
-    );
-};
-
-export default ShowTask;
+                                </Form.Control>
+                            </Form.Group>
+                            <Button color="primary" type="submit">Submit</Button>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
+            </Container>
+           </>
+        );
+    };
+    
+    export default ShowTask;

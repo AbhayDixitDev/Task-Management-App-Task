@@ -7,7 +7,7 @@ const AdminFooter = () => {
                 <Row>
                     <Col md={12}>
                         <p className="mb-0">
-                            &copy; {new Date().getFullYear()} Copyright: Abhay Dixit Ji
+                            &copy; {new Date().getFullYear()} Copyright: Abhay Dixit
                         </p>
                     </Col>
                 </Row>

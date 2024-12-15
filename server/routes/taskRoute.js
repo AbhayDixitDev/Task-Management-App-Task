@@ -2,6 +2,7 @@ const express = require('express');
 const Task = require('../models/taskModel');
 const { authorization, adminAuthorization } = require('../middlewares/auth'); 
 const router = express.Router();
+const User = require('../models/usersModel');
 
 
 router.post('/create', async (req, res) => {
@@ -44,13 +45,32 @@ router.get('/:id', authorization, async (req, res) => {
     }
 });
 
+router.post('/mytasks', async (req, res) => {
+    const { username } = req.body;
+    console.log(username);
+
+    try {
+        const user = await User.findOne({ username });
+        // console.log(user);
+        if (!user) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+        const tasks = await Task.find({ userId: user._id }).sort({ createdAt: -1 }).populate('userId', '-password');
+        res.send(tasks);
+    } catch (error) {
+        res.status(500).send({ message: 'Server error' });
+    }
+});
+
+
+
 router.put('/:id', async (req, res) => {
-    const { title, description, dueDate, priority, userId } = req.body;
+    const { title, description, dueDate,status, priority, userId } = req.body;
 
     try {
         const task = await Task.findByIdAndUpdate(
             req.params.id,
-            { title, description, dueDate, priority, userId },
+            { title, description, dueDate, status, priority, userId },
             { new: true }
         );
         console.log(task)
@@ -64,7 +84,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', adminAuthorization, async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const task = await Task.findByIdAndDelete(req.params.id);
         if (!task) {
